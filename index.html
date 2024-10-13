@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flipbook with Background, Single Audio, and Text Change</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            transition: background-image 1s ease;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .text-container {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .side-image {
+            width: 100px;
+            height: 400px;
+            object-fit: cover;
+            margin: 0 20px;
+        }
+
+        .book-container {
+            border: 10px solid brown; /* Brown border around the book */
+            padding: 10px;
+            background-color: #8B4513; /* Slightly darker brown for book cover */
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3); /* Shadow effect for book */
+        }
+
+        .book {
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+            position: relative;
+        }
+
+        .page {
+            width: 100%;
+            height: 100%;
+            background: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 1s ease;
+            transform-origin: left;
+            backface-visibility: hidden;
+        }
+
+        .page img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .page:nth-child(1) { z-index: 12; } /* First page (0.jpg) */
+        .page:nth-child(2) { z-index: 11; }
+        .page:nth-child(3) { z-index: 10; }
+        .page:nth-child(4) { z-index: 9; }
+        .page:nth-child(5) { z-index: 8; }
+        .page:nth-child(6) { z-index: 7; }
+        .page:nth-child(7) { z-index: 6; }
+        .page:nth-child(8) { z-index: 5; }
+        .page:nth-child(9) { z-index: 4; }
+        .page:nth-child(10) { z-index: 3; }
+        .page:nth-child(11) { z-index: 2; }
+        .page:nth-child(12) { z-index: 1; } /* Last page (10.jpg) */
+
+        .page.flipped {
+            transform: rotateY(-180deg);
+        }
+
+        .audio-image {
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100px; /* Set desired width for audio image */
+            height: auto; /* Maintain aspect ratio */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Dynamic text above the book -->
+<div class="text-container" id="dynamicText"></div>
+
+<div class="wrapper">
+    <!-- Left side image -->
+    <img src="11.gif" alt="Left Side Image" class="side-image">
+
+    <!-- Flipbook -->
+    <div class="book-container">
+        <div class="book">
+            <div class="page" onclick="handlePageClick(event, 1)"><img src="0.jpg" alt="Page 0"></div> <!-- First page (0.jpg) -->
+            <div class="page" onclick="handlePageClick(event, 2)"><img src="1.jpg" alt="Page 1"></div>
+            <div class="page" onclick="handlePageClick(event, 3)"><img src="2.jpg" alt="Page 2"></div>
+            <div class="page" onclick="handlePageClick(event, 4)"><img src="3.jpg" alt="Page 3"></div>
+            <div class="page" onclick="handlePageClick(event, 5)"><img src="4.jpg" alt="Page 4"></div>
+            <div class="page" onclick="handlePageClick(event, 6)"><img src="5.jpg" alt="Page 5"></div>
+            <div class="page" onclick="handlePageClick(event, 7)"><img src="6.jpg" alt="Page 6"></div>
+            <div class="page" onclick="handlePageClick(event, 8)"><img src="7.jpg" alt="Page 7"></div>
+            <div class="page" onclick="handlePageClick(event, 9)"><img src="8.jpg" alt="Page 8"></div>
+            <div class="page" onclick="handlePageClick(event, 10)"><img src="9.jpg" alt="Page 9"></div>
+            <div class="page" onclick="handlePageClick(event, 11)"><img src="10.jpg" alt="Page 10"></div> <!-- Last page (10.jpg) -->
+        </div>
+    </div>
+
+    <!-- Right side image -->
+    <img src="11.gif" alt="Right Side Image" class="side-image">
+</div>
+
+<!-- Audio image to play the audio -->
+<img src="audio-icon.png" alt="Play Audio" class="audio-image" onclick="playAudio()">
+
+<!-- Audio element (hidden) -->
+<audio id="audioPlayer" src="audio.mp3" preload="auto"></audio>
+
+<script>
+    let currentPage = 0;
+
+    // Array of background images for each page
+    const backgrounds = [
+        'url(back0.jpg)',  // Background for Page 0
+        'url(back1.jpg)',  // Background for Page 1
+        'url(back2.jpg)',  // Background for Page 2
+        'url(back3.jpg)',  // Background for Page 3
+        'url(back4.jpg)',  // Background for Page 4
+        'url(back5.jpg)',  // Background for Page 5
+        'url(back6.jpg)',  // Background for Page 6
+        'url(back7.jpg)',  // Background for Page 7
+        'url(back8.jpg)',  // Background for Page 8
+        'url(back9.jpg)',  // Background for Page 9
+        'url(back10.jpg)'  // Background for Page 10
+    ];
+
+    // Array of texts for each page
+    const texts = [
+        "",
+        "బాల త్రిపుర సుందరీ",
+        "గాయత్రీ దేవి",
+        "అన్నపూర్ణా దేవి",
+        "శ్రీ లలితా త్రిపుర సుందరీ దేవి",
+        "శ్రీ మహా చండీ దేవి",
+        "శ్రీ మహాలక్ష్మీ దేవి",
+        "శ్రీ సరస్వతీ దేవి",
+        "దుర్గా దేవి",
+        "మహిషాసుర మర్దినీ దేవి",
+        "నవ దుర్గయే నమః",
+    ];
+
+    // Function to handle click on page and decide forward or backward
+    function handlePageClick(event, pageNumber) {
+        const clickedY = event.clientY;
+        const page = event.currentTarget;
+        const rect = page.getBoundingClientRect();
+        const halfHeight = rect.height / 2;
+
+        if (clickedY < rect.top + halfHeight) {
+            // Top half clicked, go to the next page (flip forward)
+            if (pageNumber > currentPage && currentPage < 12) {
+                flipPage(currentPage + 1);
+            }
+        } else {
+            // Bottom half clicked, go to the previous page (flip backward)
+            if (currentPage > 0) {
+                flipPage(currentPage - 1);
+            }
+        }
+    }
+
+    // Function to flip pages forward or backward
+    function flipPage(pageNumber) {
+        const pages = document.querySelectorAll('.page');
+        
+        if (pageNumber > currentPage) {
+            // Flip forward
+            for (let i = currentPage; i < pageNumber; i++) {
+                pages[i].classList.add('flipped');
+            }
+        } else {
+            // Flip backward
+            for (let i = currentPage; i > pageNumber; i--) {
+                pages[i - 1].classList.remove('flipped');
+            }
+        }
+        currentPage = pageNumber;
+
+        // Change background based on the current page
+        document.body.style.backgroundImage = backgrounds[pageNumber - 1];
+
+        // Update the text
+        document.getElementById('dynamicText').innerText = texts[pageNumber];
+    }
+
+    // Function to play the audio
+    function playAudio() {
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.currentTime = 0; // Reset audio to start
+        audioPlayer.play();
+    }
+</script>
+
+</body>
+</html>
